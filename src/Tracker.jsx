@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "./supabaseClient";
 
 // ── Habits ──────────────────────────────────────────────────────────
+// These are example defaults — customize them to match your own routines.
 const HABITS = [
   { id: "breathwork", name: "Breathwork", emoji: "🌬️", duration: "3 min", description: "Box breathing: 4s in, 4s hold, 4s out, 4s hold", stackOn: "While the coffee brews", category: "morning" },
   { id: "intention", name: "Set Intention", emoji: "🎯", duration: "2 min", description: "One sentence: what matters most today?", stackOn: "First sip of coffee", category: "morning" },
@@ -76,11 +77,15 @@ export default function Tracker({ session, onSignOut }) {
   // Load from Supabase on mount
   useEffect(() => {
     (async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("wellness_data")
         .select("log, journal")
         .eq("user_id", userId)
         .single();
+      if (error && error.code !== "PGRST116") {
+        console.error("Failed to load data:", error.message);
+        return;
+      }
       if (data) {
         if (data.log) { setLog(data.log); cacheSet("stillpoint-log", data.log); }
         if (data.journal) { setJournal(data.journal); cacheSet("stillpoint-journal", data.journal); }
@@ -97,12 +102,13 @@ export default function Tracker({ session, onSignOut }) {
     cacheSet("stillpoint-log", newLog);
     cacheSet("stillpoint-journal", newJournal);
     setSyncing(true);
-    await supabase.from("wellness_data").upsert({
+    const { error } = await supabase.from("wellness_data").upsert({
       user_id: userId,
       log: newLog,
       journal: newJournal,
       updated_at: new Date().toISOString(),
     }, { onConflict: "user_id" });
+    if (error) console.error("Sync failed:", error.message);
     setSyncing(false);
   }, [userId]);
 

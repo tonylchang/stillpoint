@@ -62,5 +62,5 @@ Six micro-habits (all ≤5 min) spread across your day, each "stacked" onto some
 - **Frontend**: React + Vite (static, deployed to Vercel)
 - **Backend**: Supabase (Postgres + Auth + Row Level Security)
 - **Auth**: Magic link (passwordless email)
-- **Storage**: One JSONB row per user, upserted on each change
-- **Customization**: Daily habits are defined in src/Tracker.jsx
+- **Storage**: One JSONB row per user in `wellness_data`, upserted on each change
+- **Customization**: Daily habits are defined in `src/Tracker.jsx`
