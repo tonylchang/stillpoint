@@ -51,7 +51,7 @@ Open [http://localhost:5173](http://localhost:5173).
    - `VITE_SUPABASE_ANON_KEY` → your anon key
 4. Click **Deploy**
 
-After deploying, go back to Supabase **Authentication → URL Configuration** and add your Vercel URL to the **Redirect URLs** list (e.g. `https://stillpoint.vercel.app`). This ensures the magic link redirects work correctly.
+After deploying, go back to Supabase **Authentication → URL Configuration** and add your Vercel URL to the **Redirect URLs** list. This ensures the magic link redirects work correctly.
 
 ## How It Works
 
@@ -63,3 +63,4 @@ Six micro-habits (all ≤5 min) spread across your day, each "stacked" onto some
 - **Backend**: Supabase (Postgres + Auth + Row Level Security)
 - **Auth**: Magic link (passwordless email)
 - **Storage**: One JSONB row per user, upserted on each change
+- **Customization**: Daily habits are defined in src/Tracker.jsx
