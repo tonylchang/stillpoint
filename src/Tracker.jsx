@@ -259,10 +259,11 @@ export default function Tracker({ session, onSignOut }) {
       </div>
 
       {/* Footer actions */}
-      <div style={{ display: "flex", justifyContent: "center", gap: 24, marginTop: 24, paddingBottom: 40 }}>
+      <div style={{ display: "flex", justifyContent: "center", gap: 24, marginTop: 24, paddingBottom: 12 }}>
         <button onClick={resetAll} style={styles.resetBtn}>Reset data</button>
         <button onClick={onSignOut} style={styles.resetBtn}>Sign out</button>
       </div>
+      <p style={styles.buildStamp}>Build: {new Date(__BUILD_TIME__).toLocaleString()}</p>
     </div>
   );
 }
@@ -301,4 +302,5 @@ const styles = {
   journalArea: { width: "100%", background: "#0F172A", border: "1px solid #334155", borderRadius: 8, padding: 12, color: "#E2E8F0", fontSize: 14, resize: "vertical", outline: "none", fontFamily: "inherit", boxSizing: "border-box" },
   saveBtn: { marginTop: 8, padding: "8px 20px", background: "#5BA67D", color: "#fff", border: "none", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" },
   resetBtn: { background: "transparent", border: "none", color: "#475569", fontSize: 12, cursor: "pointer", textDecoration: "underline", fontFamily: "inherit" },
+  buildStamp: { textAlign: "center", fontSize: 10, color: "#334155", margin: 0, paddingBottom: 40 },
 };
