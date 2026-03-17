@@ -16,19 +16,26 @@ const CATEGORY_LABELS = { morning: "Morning", midday: "Midday", afternoon: "Afte
 const CATEGORY_COLORS = { morning: "#E8A838", midday: "#5BA67D", afternoon: "#C47A5A", evening: "#6B7DB3" };
 
 // ── Date helpers ────────────────────────────────────────────────────
-const TZ = "America/Los_Angeles";
+const DEFAULT_TZ_OFFSET = -8;
+function getTzOffset() {
+  try { const v = localStorage.getItem("stillpoint-tz-offset"); return v !== null ? Number(v) : DEFAULT_TZ_OFFSET; } catch { return DEFAULT_TZ_OFFSET; }
+}
+
 function getDateKey(date = new Date()) {
-  const parts = date.toLocaleDateString("en-CA", { timeZone: TZ });
-  return parts; // en-CA locale returns YYYY-MM-DD
+  const adjusted = new Date(date.getTime() + getTzOffset() * 3600000);
+  const y = adjusted.getUTCFullYear();
+  const m = String(adjusted.getUTCMonth() + 1).padStart(2, "0");
+  const d = String(adjusted.getUTCDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
 }
 
 function getDayLabel(dateKey) {
-  const d = new Date(dateKey + "T12:00:00");
+  const d = new Date(dateKey + "T12:00:00Z");
   const today = getDateKey();
   const yesterday = getDateKey(new Date(Date.now() - 86400000));
   if (dateKey === today) return "Today";
   if (dateKey === yesterday) return "Yesterday";
-  return d.toLocaleDateString("en-US", { timeZone: TZ, weekday: "short", month: "short", day: "numeric" });
+  return d.toLocaleDateString("en-US", { timeZone: "UTC", weekday: "short", month: "short", day: "numeric" });
 }
 
 function getLast7Days() {
@@ -75,6 +82,7 @@ export default function Tracker({ session, onSignOut }) {
   const [journalInput, setJournalInput] = useState("");
   const [showJournal, setShowJournal] = useState(false);
   const [syncing, setSyncing] = useState(false);
+  const [tzOffset, setTzOffset] = useState(getTzOffset);
 
   // Load from Supabase on mount
   useEffect(() => {
@@ -169,8 +177,8 @@ export default function Tracker({ session, onSignOut }) {
           const done = HABITS.filter((h) => dayLog2[h.id]).length;
           const isSelected = dayKey === selectedDay;
           const isToday = dayKey === getDateKey();
-          const d = new Date(dayKey + "T12:00:00");
-          const dayLetter = d.toLocaleDateString("en-US", { timeZone: TZ, weekday: "narrow" });
+          const d = new Date(dayKey + "T12:00:00Z");
+          const dayLetter = d.toLocaleDateString("en-US", { timeZone: "UTC", weekday: "narrow" });
           return (
             <button key={dayKey} onClick={() => setSelectedDay(dayKey)} style={{
               ...styles.dayBtn,
@@ -262,6 +270,19 @@ export default function Tracker({ session, onSignOut }) {
         <button onClick={resetAll} style={styles.resetBtn}>Reset data</button>
         <button onClick={onSignOut} style={styles.resetBtn}>Sign out</button>
       </div>
+      <div style={styles.tzRow}>
+        <label style={styles.tzLabel}>Timezone:</label>
+        <select value={tzOffset} onChange={(e) => {
+          const v = Number(e.target.value);
+          setTzOffset(v);
+          localStorage.setItem("stillpoint-tz-offset", v);
+          setSelectedDay(getDateKey());
+        }} style={styles.tzSelect}>
+          {Array.from({ length: 27 }, (_, i) => i - 12).map((o) => (
+            <option key={o} value={o}>UTC{o >= 0 ? "+" : ""}{o}</option>
+          ))}
+        </select>
+      </div>
       <p style={styles.buildStamp}>Build: {new Date(__BUILD_TIME__).toLocaleString()}</p>
     </div>
   );
@@ -301,5 +322,8 @@ const styles = {
   journalArea: { width: "100%", background: "#0F172A", border: "1px solid #334155", borderRadius: 8, padding: 12, color: "#E2E8F0", fontSize: 14, resize: "vertical", outline: "none", fontFamily: "inherit", boxSizing: "border-box" },
   saveBtn: { marginTop: 8, padding: "8px 20px", background: "#5BA67D", color: "#fff", border: "none", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" },
   resetBtn: { background: "transparent", border: "none", color: "#475569", fontSize: 12, cursor: "pointer", textDecoration: "underline", fontFamily: "inherit" },
-  buildStamp: { textAlign: "center", fontSize: 10, color: "#334155", margin: 0, paddingBottom: 40 },
+  tzRow: { display: "flex", justifyContent: "center", alignItems: "center", gap: 8, marginTop: 16 },
+  tzLabel: { fontSize: 11, color: "#475569" },
+  tzSelect: { background: "#1E293B", color: "#94A3B8", border: "1px solid #334155", borderRadius: 6, padding: "4px 8px", fontSize: 11, fontFamily: "inherit", outline: "none" },
+  buildStamp: { textAlign: "center", fontSize: 10, color: "#334155", margin: 0, paddingBottom: 40, marginTop: 8 },
 };
