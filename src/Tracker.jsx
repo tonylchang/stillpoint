@@ -17,7 +17,10 @@ const CATEGORY_COLORS = { morning: "#E8A838", midday: "#5BA67D", afternoon: "#C4
 
 // ── Date helpers ────────────────────────────────────────────────────
 function getDateKey(date = new Date()) {
-  return date.toISOString().split("T")[0];
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
 }
 
 function getDayLabel(dateKey) {
