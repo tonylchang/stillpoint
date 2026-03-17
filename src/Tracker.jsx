@@ -16,11 +16,10 @@ const CATEGORY_LABELS = { morning: "Morning", midday: "Midday", afternoon: "Afte
 const CATEGORY_COLORS = { morning: "#E8A838", midday: "#5BA67D", afternoon: "#C47A5A", evening: "#6B7DB3" };
 
 // ── Date helpers ────────────────────────────────────────────────────
+const TZ = "America/Los_Angeles";
 function getDateKey(date = new Date()) {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, "0");
-  const d = String(date.getDate()).padStart(2, "0");
-  return `${y}-${m}-${d}`;
+  const parts = date.toLocaleDateString("en-CA", { timeZone: TZ });
+  return parts; // en-CA locale returns YYYY-MM-DD
 }
 
 function getDayLabel(dateKey) {
@@ -29,7 +28,7 @@ function getDayLabel(dateKey) {
   const yesterday = getDateKey(new Date(Date.now() - 86400000));
   if (dateKey === today) return "Today";
   if (dateKey === yesterday) return "Yesterday";
-  return d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+  return d.toLocaleDateString("en-US", { timeZone: TZ, weekday: "short", month: "short", day: "numeric" });
 }
 
 function getLast7Days() {
@@ -171,7 +170,7 @@ export default function Tracker({ session, onSignOut }) {
           const isSelected = dayKey === selectedDay;
           const isToday = dayKey === getDateKey();
           const d = new Date(dayKey + "T12:00:00");
-          const dayLetter = d.toLocaleDateString("en-US", { weekday: "narrow" });
+          const dayLetter = d.toLocaleDateString("en-US", { timeZone: TZ, weekday: "narrow" });
           return (
             <button key={dayKey} onClick={() => setSelectedDay(dayKey)} style={{
               ...styles.dayBtn,
